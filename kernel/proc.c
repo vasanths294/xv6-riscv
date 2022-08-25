@@ -58,6 +58,27 @@ procinit(void)
   }
 }
 
+
+  // static char *states[] = {
+  // [UNUSED]    "unused",
+  // [USED]      "used",
+  // [SLEEPING]  "sleep ",
+  // [RUNNABLE]  "runble",
+  // [RUNNING]   "run   ",
+  // [ZOMBIE]    "zombie"
+  // };
+
+int total_process_count(void)
+{
+  struct proc *procptr;
+  int count = 0;
+  for(procptr = proc; procptr < &proc[NPROC]; procptr++){
+    if(procptr->state != UNUSED)
+      count++;
+  }
+  return count;
+}
+
 // Must be called with interrupts disabled,
 // to prevent race with process being moved
 // to a different CPU.
@@ -680,4 +701,22 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+//hello: printing hello msg
+void print_hello(int n)
+{
+	printf("Hello from the kernel space %d\n", n);
+}
+
+//hello: printing sys info
+void print_sysinfo(int param)
+{
+	printf("Printing sys info %d\n", param);
+}
+
+//hello: printing proc info
+void proc_sysinfo(int param)
+{
+	printf("Printing sys info %d\n", param);
 }

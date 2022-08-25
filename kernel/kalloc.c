@@ -30,6 +30,20 @@ kinit()
   freerange(end, (void*)PHYSTOP);
 }
 
+int kfreepages()
+{
+    int freepages = 0;
+    struct run *runptr;
+    acquire(&kmem.lock);
+    runptr = kmem.freelist;
+    while (runptr > 0) {
+      freepages += 1;
+      runptr = runptr->next;
+    }
+    release(&kmem.lock);
+    return freepages;
+}
+
 void
 freerange(void *pa_start, void *pa_end)
 {

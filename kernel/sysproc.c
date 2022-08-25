@@ -89,3 +89,54 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64 sys_hello(void) // hello syscall def
+{
+	int n;
+	argint(0, &n);
+	print_hello(n);
+	return 0;
+}
+
+uint64 sys_sysinfo(void) // sysinfo syscall def
+{
+	int n;
+	argint(0, &n);
+	switch(n)
+	{
+	case 0: return total_process_count();
+			break;
+
+	case 1: return totalsyscount;
+			break;
+
+	case 2: return kfreepages();
+			break;
+
+	default: printf("-1");;
+	}
+	return -1;
+}
+
+uint64 sys_procinfo(void)
+{
+  uint64 ptr;
+  argaddr(0, &ptr);
+  int temp;
+  struct proc *p = myproc();
+  int parentPid = copyout(p->pagetable, ptr, (char*)&(p->parent->pid), sizeof(p->parent->pid));
+  int count = copyout(p->pagetable, ptr+4, (char*)&(p->syscallCount), sizeof(p->syscallCount));
+
+  if ( parentPid < 0 || count < 0 )
+    return -1;
+
+  if((p->sz)%PGSIZE == 0)
+    temp = p->sz/PGSIZE;
+  else
+    temp = p->sz/PGSIZE + 1;
+
+  int pages = copyout(p->pagetable, ptr+8, (char*)&temp, sizeof(p->sz));
+  if ( pages < 0 )
+    return -1;
+  return 0;
+}

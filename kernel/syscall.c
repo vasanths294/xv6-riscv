@@ -7,6 +7,8 @@
 #include "syscall.h"
 #include "defs.h"
 
+uint totalsyscount = 0;
+
 // Fetch the uint64 at addr from the current process.
 int
 fetchaddr(uint64 addr, uint64 *ip)
@@ -101,6 +103,9 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
+extern uint64 sys_hello(void); // hello declaration
+extern uint64 sys_sysinfo(void); // sysinfo declaration
+extern uint64 sys_procinfo(void); // procinfo declaration
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -126,22 +131,24 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_hello]   sys_hello, // hello syscall entry 
+[SYS_sysinfo]   sys_sysinfo, // sysinfo syscall entry 
+[SYS_procinfo]   sys_procinfo, // procinfo syscall entry 
 };
 
-void
-syscall(void)
+void syscall(void)
 {
-  int num;
+  int n;
   struct proc *p = myproc();
 
-  num = p->trapframe->a7;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    // Use num to lookup the system call function for num, call it,
-    // and store its return value in p->trapframe->a0
-    p->trapframe->a0 = syscalls[num]();
+  n = p->trapframe->a7;
+  if(n > 0 && n < NELEM(syscalls) && syscalls[n]) {
+    p->trapframe->a0 = syscalls[n]();
+    p->syscallCount++;  // Syscall count of this process
+    totalsyscount++;   // Syscall count of all processes
   } else {
     printf("%d %s: unknown sys call %d\n",
-            p->pid, p->name, num);
+            p->pid, p->name, n);
     p->trapframe->a0 = -1;
   }
 }
